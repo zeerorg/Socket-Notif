@@ -32,11 +32,11 @@ exports.connectUserDevice = function(url, data, socket, io) {
               "joinedRooms": [defaultRoom],
               "connected": true,
               "socket": socket.id,
-              "messages": null
+              "messages": []
             })
             db.close();
             socket.join(defaultRoom)  // join the single room
-            io.to(defaultRoom).emit("notification", "Joined room " + defaultRoom);
+            //io.to(defaultRoom).emit("notification", "Joined room " + defaultRoom);
           })
         } else {
           // join rooms
@@ -47,18 +47,16 @@ exports.connectUserDevice = function(url, data, socket, io) {
             //io.to(rooms[i]).emit("notification", "Joined room " + rooms[i]);
           }
           // send all the pending notifications
-          if(document["messages"] != null) {
-            console.log("Sending messages");
-            var messages = document["messages"];
-            for(var i=0; i<messages.length; i++){
-              io.to(socket.id).emit("notification", messages[i])
-            }
+          console.log("Sending messages");
+          var messages = document["messages"];
+          for(var i=0; i<messages.length; i++){
+            io.to(socket.id).emit("notification", messages[i])
           }
           // update in database
           var deviceResetSpecs = {
             "connected": true,
             "socket": socket.id,
-            "messages": null
+            "messages": []
           }
           db.collection('user-devices').updateOne({"device": device_id, "token": app_token}, {$set:deviceResetSpecs}, function(err, document) {
             db.close();
@@ -83,38 +81,6 @@ exports.disconnectUser = function(url, socket) {
     // set connected to false and socket to null
     db.collection('user-devices').updateOne({"socket": socket.id}, {$set:{"connected": false, "socket": null}}, function(err, document) {
       db.close();
-    });
-  });
-}
-
-exports.sendToDevice = function(url, data, socket, io) {  // data contains (1)'deviceId' to send to (2)'token' (3)message
-  data = JSON.parse(data);
-  MongoClient.connect(url, function(err, db) {
-    if(err != null) {
-      console.log("Not Connected")
-      console.log(err)
-      return;
-    }
-    db.collection('user-devices').findOne({"device": data['deviceId'], "token": data['token']}, function(err, document) {
-      assert.equal(err, null);
-      assert.notEqual(document, null);
-      // send data to a specific device
-      if(document["connected"] == true) {
-        io.to(document["socket"]).emit("notification", data['message'])
-      } else {
-        var messages;
-        if(document["messages"] == null) {
-          messages = [];
-        } else {
-          messages = document["messages"];
-        }
-        messages.push(data['message'])
-        console.log("messages : ")
-        console.log(messages)
-        db.collection('user-devices').updateOne({"device": data['deviceId'], "token": data['token']}, {$set:{"messages": messages}}, function(err, document) {
-          db.close();
-        })
-      }
     });
   });
 }

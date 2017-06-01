@@ -8,13 +8,13 @@ var assert = require('assert');
 
 var rooms = require("./src/rooms.js")
 var user = require("./src/basic-user.js")
+var communication = require("./src/communication.js")
 
 var globalSocket;  // single global socket I will use to emit to all other sockets
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// TODO: mongodb connect
 var url = "mongodb://notifUser:notifsecret@localhost:27017/notif";
 
 app.post('/handle',function(request,response){
@@ -43,8 +43,11 @@ io.on('connection', function(socket){
     rooms.joinRoomUserDevice(url, data, socket, io);
   });
   socket.on('SendToDevice', function(data) {
-    user.sendToDevice(url, data, socket, io);
+    communication.sendToDevice(url, data, socket, io);
   })
+  socket.on('SendToRoom', function(data) {
+    communication.sendToRoom(url, data, socket, io);
+  });
 });
 
 http.listen(3000, function(){

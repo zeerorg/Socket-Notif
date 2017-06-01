@@ -15,7 +15,7 @@ exports.connectUserDevice = function(url, data, socket, io) {
       console.log(err)
       return;
     }
-    console.log("Connected correctly to server.");
+    console.log("Connected correctly to database.");
 
     if(db.collection('devops').find({"token": app_token}, {limit: 1}).count()){  // check if token is legit
       db.collection('user-devices').findOne({"device": device_id, "token": app_token}, function(err, document) {  //see if user is present
@@ -29,7 +29,10 @@ exports.connectUserDevice = function(url, data, socket, io) {
             db.collection('user-devices').insertOne({
               "device": device_id,
               "token": app_token,
-              "joinedRooms": [defaultRoom]
+              "joinedRooms": [defaultRoom],
+              "connected": true,
+              "socket": socket.id,
+              "messages": null
             })
             db.close();
             socket.join(defaultRoom)  // join the single room
@@ -38,18 +41,80 @@ exports.connectUserDevice = function(url, data, socket, io) {
         } else {
           // join rooms
           console.log("User found")
-          console.log("User : \t")
-          console.log(document)  //(Resolved) ERROR: document comes out to be null but no err
           var rooms = document["joinedRooms"]
           socket.join(rooms)
           for(var i=0; i < rooms.length; i++) {
-            io.to(rooms[i]).emit("notification", "Joined room " + rooms[i]);
+            //io.to(rooms[i]).emit("notification", "Joined room " + rooms[i]);
           }
-          db.close();
+          // send all the pending notifications
+          if(document["messages"] != null) {
+            console.log("Sending messages");
+            var messages = document["messages"];
+            for(var i=0; i<messages.length; i++){
+              io.to(socket.id).emit("notification", messages[i])
+            }
+          }
+          // update in database
+          var deviceResetSpecs = {
+            "connected": true,
+            "socket": socket.id,
+            "messages": null
+          }
+          db.collection('user-devices').updateOne({"device": device_id, "token": app_token}, {$set:deviceResetSpecs}, function(err, document) {
+            db.close();
+          })
         }
       });
     } else {
       console.log("Wrong Token");
     }
+  });
+}
+
+exports.disconnectUser = function(url, socket) {
+  console.log("Disconnecting socket.. " + socket.id);
+  MongoClient.connect(url, function(err, db) {
+    if(err != null) {
+      console.log("Not Connected")
+      console.log(err)
+      return;
+    }
+    console.log("Connected correctly to server.");
+    // set connected to false and socket to null
+    db.collection('user-devices').updateOne({"socket": socket.id}, {$set:{"connected": false, "socket": null}}, function(err, document) {
+      db.close();
+    });
+  });
+}
+
+exports.sendToDevice = function(url, data, socket, io) {  // data contains (1)'deviceId' to send to (2)'token' (3)message
+  data = JSON.parse(data);
+  MongoClient.connect(url, function(err, db) {
+    if(err != null) {
+      console.log("Not Connected")
+      console.log(err)
+      return;
+    }
+    db.collection('user-devices').findOne({"device": data['deviceId'], "token": data['token']}, function(err, document) {
+      assert.equal(err, null);
+      assert.notEqual(document, null);
+      // send data to a specific device
+      if(document["connected"] == true) {
+        io.to(document["socket"]).emit("notification", data['message'])
+      } else {
+        var messages;
+        if(document["messages"] == null) {
+          messages = [];
+        } else {
+          messages = document["messages"];
+        }
+        messages.push(data['message'])
+        console.log("messages : ")
+        console.log(messages)
+        db.collection('user-devices').updateOne({"device": data['deviceId'], "token": data['token']}, {$set:{"messages": messages}}, function(err, document) {
+          db.close();
+        })
+      }
+    });
   });
 }

@@ -34,16 +34,17 @@ io.on('connection', function(socket){
   console.log('a user connected');
   globalSocket = socket;
   socket.on('disconnect', function(){
-    console.log('user disconnected');
+    user.disconnectUser(url, socket);
   });
   socket.on('DeviceAndToken', function(data){
-    user.connectUserDevice(url, data, socket, io)
+    user.connectUserDevice(url, data, socket, io);
   });
   socket.on('JoinRoom', function(data){
-    //joinRoomUserDevice(data, socket)
-    rooms.joinRoomUserDevice(url, data, socket, io)
+    rooms.joinRoomUserDevice(url, data, socket, io);
   });
-  socket.on('SendToDevice', function(data) {})
+  socket.on('SendToDevice', function(data) {
+    user.sendToDevice(url, data, socket, io);
+  })
 });
 
 http.listen(3000, function(){

@@ -64,5 +64,30 @@ function socketJoinRoomCallback(db, data, socket, io, roomId) {
     })
   })
   /* test notification */
-  io.to(roomId).emit('notification', "connected to room " + roomId);
+  //io.to(roomId).emit('notification', "connected to room " + roomId);
+}
+
+exports.leaveRoomUserDevice = function(url, data, socket, io) { //data contains (1) 'token', (2) 'room', (3) 'deviceId'
+  data = JSON.parse(data)
+  console.log("Leaving room");
+  MongoClient.connect(url, function(err, db) {
+    console.log("connecting to database")
+    if(err != null) {
+      console.log("Not Connected")
+      console.log(err)
+      return;
+    }
+    //joinRoomdb(db, data, socket, socketJoinRoomCallback)
+    db.collection('rooms').findOne({"token": data['token'], "rooms.name": data['room']}, function(err, document) {
+      var roomId;
+      for(var i = 0; i < document["rooms"].length; i++) {
+        if(document["rooms"][i]["name"] == data["room"]) {
+          roomId = document["rooms"][i]["roomId"]
+          break;
+        }
+      }
+      socket.leave(roomId)
+      // use 'pull' like you used 'push'
+    })
+  })
 }

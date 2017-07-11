@@ -42,6 +42,9 @@ io.on('connection', function(socket){
   socket.on('JoinRoom', function(data){
     rooms.joinRoomUserDevice(url, data, socket, io);
   });
+  socket.on('LeaveRoom', function(data){
+    rooms.leaveRoomUserDevice(url, data, socket, io);
+  })
   socket.on('SendToDevice', function(data) {
     communication.sendToDevice(url, data, socket, io);
   })

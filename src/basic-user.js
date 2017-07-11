@@ -2,9 +2,12 @@ var MongoClient = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 var assert = require('assert');
 
-var exports = module.exports = {}
+var exports = module.exports = {
+  connectUserDevice,
+  disconnectUser
+}
 
-exports.connectUserDevice = function(url, data, socket, io) {
+exports.connectUserDevice = function (url, data, socket, io) {
   var device_id = data.split(',')[0]
   var app_token = data.split(',')[1]
   console.log(device_id)
@@ -69,7 +72,7 @@ exports.connectUserDevice = function(url, data, socket, io) {
   });
 }
 
-exports.disconnectUser = function(url, socket) {
+exports.disconnectUser = function (url, socket) {
   console.log("Disconnecting socket.. " + socket.id);
   MongoClient.connect(url, function(err, db) {
     if(err != null) {
@@ -77,7 +80,7 @@ exports.disconnectUser = function(url, socket) {
       console.log(err)
       return;
     }
-    console.log("Connected correctly to server.");
+    console.log("Connected correctly to database.");
     // set connected to false and socket to null
     db.collection('user-devices').updateOne({"socket": socket.id}, {$set:{"connected": false, "socket": null}}, function(err, document) {
       db.close();

@@ -2,11 +2,6 @@ var MongoClient = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 var assert = require('assert');
 
-var exports = module.exports = {
-  connectUserDevice,
-  disconnectUser
-}
-
 exports.connectUserDevice = function (url, data, socket, io) {
   var device_id = data.split(',')[0]
   var app_token = data.split(',')[1]

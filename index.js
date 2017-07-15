@@ -6,6 +6,7 @@ var MongoClient = require('mongodb').MongoClient;
 var ObjectID = require('mongodb').ObjectID;
 var assert = require('assert');
 
+var secrets = require("./secrets.js")
 var rooms = require("./src/rooms.js")
 var user = require("./src/basic-user.js")
 var communication = require("./src/communication.js")
@@ -15,7 +16,7 @@ var globalSocket;  // single global socket I will use to emit to all other socke
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-var url = "mongodb://notifUser:notifsecret@localhost:27017/notif";
+var url = "mongodb://" + secrets.dbUser + ":" + secrets.dbPassword + "@" + secrets.dbLink + ":27017/notif";
 
 app.post('/handle',function(request,response){
   var query1=request.body.var1;

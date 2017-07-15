@@ -1,0 +1,9 @@
+{
+	"_id" : ObjectId("5969f81c63ed718533704e90"),
+	"token" : "hellothere"
+},
+{
+	"_id" : ObjectId("596a1517e39e4f073e32e15f"),
+	"rooms" : [ ],
+	"token" : "hello"
+},

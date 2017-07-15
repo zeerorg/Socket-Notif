@@ -1,0 +1,14 @@
+{
+	"_id" : ObjectId("596a3ada817ffe296c10883c"),
+	"rooms" : [
+		{
+			"name" : "default",
+			"roomId" : ObjectId("596a3ada817ffe296c10883b")
+		},
+		{
+			"name" : "myroom",
+			"roomId" : ObjectId("596a3afaa33bc7477bbd9be1")
+		}
+	],
+	"token" : "hello"
+},

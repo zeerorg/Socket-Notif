@@ -1,0 +1,12 @@
+{
+	"_id" : ObjectId("596a3aeca33bc7477bbd9be0"),
+	"connected" : true,
+	"device" : "",
+	"joinedRooms" : [
+		ObjectId("596a3ada817ffe296c10883b"),
+		ObjectId("596a3afaa33bc7477bbd9be1")
+	],
+	"messages" : [ ],
+	"socket" : "w3WqoJ2Rz9fCjEBzAAAA",
+	"token" : "hello"
+},
